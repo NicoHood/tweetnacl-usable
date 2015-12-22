@@ -51,7 +51,7 @@ sv ts64(u8 *x,u64 u)
   for (i = 7;i >= 0;--i) { x[i] = u; u >>= 8; }
 }
 
-static int vn(const u8 *x,const u8 *y,int n)
+static int vn(const u8 *x,const u8 *y,u32 n)
 {
   u32 i,d = 0;
   FOR(i,n) d |= x[i]^y[i];
@@ -711,7 +711,8 @@ sv reduce(u8 *r)
 int crypto_sign(u8 *sm,u64 *smlen,const u8 *m,u64 n,const u8 *sk)
 {
   u8 d[64],h[64],r[64];
-  i64 i,j,x[64];
+  u64 i;
+  i64 j,x[64];
   gf p[4];
 
   crypto_hash(d, sk, 32);
@@ -778,7 +779,7 @@ static int unpackneg(gf r[4],const u8 p[32])
 
 int crypto_sign_open(u8 *m,u64 *mlen,const u8 *sm,u64 n,const u8 *pk)
 {
-  int i;
+  u64 i;
   u8 t[32],h[64];
   gf p[4],q[4];
 
