@@ -25,7 +25,17 @@ void hexdump(char * data, int len)
   Serial.println();
 }
 
+#ifdef ESP8266
+extern "C" {
+  bool system_update_cpu_freq(int);
+}
+#endif
+
 void setup() {
+#ifdef ESP8266
+  system_update_cpu_freq(160);
+#endif
+
   Serial.begin(115200);
   Serial.println(F("Startup"));
 
