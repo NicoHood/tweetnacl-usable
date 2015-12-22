@@ -47,8 +47,11 @@ void setup() {
   hexdump((char*)nonce, NONCE_LEN);
 
   // Generate public and secret keys
+  Serial.print(F("\nGenerating keys... "));
+  auto m = millis();
   crypto_box_keypair(pk, sk);
   crypto_box_keypair(pk2, sk2);
+  Serial.println(millis() - m);
 
   Serial.println(F("\nPublic key:"));
   hexdump((char*)pk, PUB_KEY_LEN);
@@ -80,8 +83,15 @@ void setup() {
 #endif
 
   // Encrypt message
-  Serial.println(F("crypto_box returned:"));
-  Serial.println(crypto_box(ciphertext, (u8*)padded_message, padded_mlen, nonce, pk2, sk));
+
+  Serial.print(F("\nEncrypting message... "));
+  m = millis();
+  auto ret = crypto_box(ciphertext, (u8*)padded_message, padded_mlen, nonce, pk2, sk);
+  Serial.println(millis() - m);
+
+  Serial.println(F("\ncrypto_box returned:"));
+  Serial.println(ret);
+
 
   free(padded_message);
 
@@ -94,8 +104,14 @@ void setup() {
 #endif
 
   // Decrypt message
-  Serial.println(F("crypto_box_open returned:"));
-  Serial.println(crypto_box_open((u8*)decryptedmessage, ciphertext, padded_mlen, nonce, pk, sk2));
+  Serial.print(F("\nDecrypting message... "));
+  m = millis();
+  ret = crypto_box_open((u8*)decryptedmessage, ciphertext, padded_mlen, nonce, pk, sk2);
+  Serial.println(millis() - m);
+
+
+  Serial.println(F("\ncrypto_box_open returned:"));
+  Serial.println(ret);
 
   free(ciphertext);
   Serial.println(F("\nDecrypted text: \n"));
