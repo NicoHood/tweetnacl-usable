@@ -4,8 +4,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void randombytes(unsigned char * ptr,unsigned int length) 
+void randombytes(unsigned char * ptr,unsigned long long length) 
 {
+#ifdef ARDUINO
+  while (length--) {
+    *ptr = rand();
+    ptr++;
+  }
+#else
 	char failed = 0;
 #ifdef WIN32
 	static HCRYPTPROV prov = 0;
@@ -38,4 +44,5 @@ void randombytes(unsigned char * ptr,unsigned int length)
 						"this to https://github.com/ultramancool\n");
 		exit(1);
 	}
+#endif
 }
