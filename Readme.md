@@ -1,13 +1,16 @@
-### Arduino Speed Tests:
+### Arduino Speed Tests
 
 Tests are not relyable, with a few bytes of data.
 
 * Arduino Uno - Not enough ram
-* Arduino Mega - key generation: 62,2s key generation, 32,2 en/decryption
+* Arduino Mega - 62,2s key generation, 32,2 en/decryption
 * ESP8266 80Mhz - 2,8s key generation, 1,4s en/decryption
 * ESP8266 160Mhz - 1,4s key generation, 0,7s en/decryption
 
-Different gcc optimization levels seem to not influence the speed in any noticable way (not a ms difference):
+### Optimization Tests
+
+Different gcc optimization levels seem to not influence the speed in any noticable way (about a ms difference).
+Program was compiled for ESP8266 (32bit).
 
 OS
 Sketch uses 210,132 bytes (20%) of program storage space. Maximum is 1,044,464 bytes.
