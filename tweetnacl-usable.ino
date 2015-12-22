@@ -4,18 +4,6 @@ extern "C" {
 }
 typedef unsigned char u8;
 
-
-//TODO
-#define crypto_box_curve25519xsalsa20poly1305_tweet_BEFORENMBYTES 32
-#define crypto_box_curve25519xsalsa20poly1305_tweet_ZEROBYTES 32
-#define crypto_box_BEFORENMBYTES crypto_box_curve25519xsalsa20poly1305_BEFORENMBYTES
-#define crypto_box_ZEROBYTES crypto_box_curve25519xsalsa20poly1305_ZEROBYTES
-
-#define PUB_KEY_LEN crypto_box_PUBLICKEYBYTES
-#define PRIV_KEY_LEN crypto_box_SECRETKEYBYTES
-#define NONCE_LEN crypto_box_NONCEBYTES
-#define PADDING_LEN 32
-
 void hexdump(char * data, int len)
 {
   int i;
@@ -42,19 +30,19 @@ void setup() {
 
   char * padded_message;
   int padded_mlen;
-  u8 sk[PRIV_KEY_LEN] = {0};
-  u8 pk[PUB_KEY_LEN] = {0};
-  u8 sk2[PRIV_KEY_LEN] = {0};
-  u8 pk2[PUB_KEY_LEN] = {0};
-  u8 nonce[NONCE_LEN] = {0};
+  u8 sk[crypto_box_SECRETKEYBYTES] = {0};
+  u8 pk[crypto_box_PUBLICKEYBYTES] = {0};
+  u8 sk2[crypto_box_SECRETKEYBYTES] = {0};
+  u8 pk2[crypto_box_PUBLICKEYBYTES] = {0};
+  u8 nonce[crypto_box_NONCEBYTES] = {0};
   char* message = "This is a cross-platform test of crypto_box/crypto_box_open in TweetNaCl.";
   u8 * ciphertext;
   char *decryptedmessage;
 
   // Randomize nonce
-  randombytes(nonce, NONCE_LEN);
+  randombytes(nonce, crypto_box_NONCEBYTES);
   Serial.println(F("Nonce:"));
-  hexdump((char*)nonce, NONCE_LEN);
+  hexdump((char*)nonce, crypto_box_NONCEBYTES);
 
   // Generate public and secret keys
   Serial.print(F("\nGenerating keys... "));
@@ -64,19 +52,19 @@ void setup() {
   Serial.println(millis() - m);
 
   Serial.println(F("\nPublic key:"));
-  hexdump((char*)pk, PUB_KEY_LEN);
+  hexdump((char*)pk, crypto_box_PUBLICKEYBYTES);
   Serial.println(F("\nSecret key:"));
-  hexdump((char*)sk, PRIV_KEY_LEN);
+  hexdump((char*)sk, crypto_box_SECRETKEYBYTES);
   Serial.println(F("\nPublic key2:"));
-  hexdump((char*)pk2, PUB_KEY_LEN);
+  hexdump((char*)pk2, crypto_box_PUBLICKEYBYTES);
   Serial.println(F("\nSecret key2:"));
-  hexdump((char*)sk2, PRIV_KEY_LEN);
+  hexdump((char*)sk2, crypto_box_SECRETKEYBYTES);
 
   // Create temporary message with padding
-  padded_mlen = strlen(message) + PADDING_LEN;
+  padded_mlen = strlen(message) + crypto_box_ZEROBYTES;
   padded_message = (char*) malloc(padded_mlen);
-  memset(padded_message, 0, PADDING_LEN);
-  memcpy(padded_message + PADDING_LEN, message, strlen(message));
+  memset(padded_message, 0, crypto_box_ZEROBYTES);
+  memcpy(padded_message + crypto_box_ZEROBYTES, message, strlen(message));
 
   Serial.println(F("\nUnencrypted Message:"));
   hexdump((char*)padded_message, padded_mlen);
@@ -127,7 +115,7 @@ void setup() {
   Serial.println(F("\nDecrypted text: \n"));
   hexdump((char*)decryptedmessage, padded_mlen);
 
-  Serial.write(decryptedmessage + PADDING_LEN, strlen(message));
+  Serial.write(decryptedmessage + crypto_box_ZEROBYTES, strlen(message));
   free(decryptedmessage);
 }
 
