@@ -27,7 +27,6 @@ void setup() {
   Serial.begin(115200);
   Serial.println(F("Startup"));
 
-
   char * padded_message;
   int padded_mlen;
   u8 sk[crypto_box_SECRETKEYBYTES] = {0};
@@ -63,17 +62,13 @@ void setup() {
   // Create temporary message with padding
   padded_mlen = strlen(message) + crypto_box_ZEROBYTES;
   padded_message = (char*) malloc(padded_mlen);
-  memset(padded_message, 0, crypto_box_ZEROBYTES);
+  memset(padded_message, 0x00, crypto_box_ZEROBYTES);
   memcpy(padded_message + crypto_box_ZEROBYTES, message, strlen(message));
 
   Serial.println(F("\nUnencrypted Message:"));
   hexdump((char*)padded_message, padded_mlen);
 
   ciphertext = (u8*) malloc(padded_mlen);
-
-  // We have a string so add 1 byte and NULL it so we can print it
-  decryptedmessage = (char*) malloc(padded_mlen + 1);
-  decryptedmessage[padded_mlen] = '\0';
 
 #ifdef ESP8266
   // Call the yield() function to avoid a wdt reset
@@ -100,6 +95,10 @@ void setup() {
   // Call the yield() function to avoid a wdt reset
   yield();
 #endif
+
+  // We have a string so add 1 byte and NULL it so we can print it
+  decryptedmessage = (char*) malloc(padded_mlen + 1);
+  decryptedmessage[padded_mlen] = '\0';
 
   // Decrypt message
   Serial.print(F("\nDecrypting message... "));
