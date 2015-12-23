@@ -1,3 +1,13 @@
+### Building
+
+A simple makefile is provided to compile the source.
+
+```bash
+make cleanall
+make
+./tweetnacl
+```
+
 ### Arduino Speed Tests
 
 Tests are not relyable, with a few bytes of data.
