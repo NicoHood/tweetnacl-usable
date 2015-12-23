@@ -34,6 +34,7 @@ void setup() {
   u8 sk2[crypto_box_SECRETKEYBYTES] = {0};
   u8 pk2[crypto_box_PUBLICKEYBYTES] = {0};
   u8 nonce[crypto_box_NONCEBYTES] = {0};
+  u8 k[crypto_box_BEFORENMBYTES] = {0};
   char* message = "This is a cross-platform test of crypto_box/crypto_box_open in TweetNaCl.";
   u8 * ciphertext;
   char *decryptedmessage;
@@ -47,8 +48,8 @@ void setup() {
   Serial.print(F("\nGenerating keys... "));
   auto m = millis();
   crypto_box_keypair(pk, sk);
-  crypto_box_keypair(pk2, sk2);
   Serial.println(millis() - m);
+  crypto_box_keypair(pk2, sk2);  
 
   Serial.println(F("\nPublic key:"));
   hexdump((char*)pk, crypto_box_PUBLICKEYBYTES);
@@ -76,7 +77,6 @@ void setup() {
 #endif
 
   // Encrypt message
-
   Serial.print(F("\nEncrypting message... "));
   m = millis();
   auto ret = crypto_box(ciphertext, (u8*)padded_message, padded_mlen, nonce, pk2, sk);
@@ -84,7 +84,6 @@ void setup() {
 
   Serial.println(F("\ncrypto_box returned:"));
   Serial.println(ret);
-
 
   free(padded_message);
 
@@ -104,6 +103,76 @@ void setup() {
   Serial.print(F("\nDecrypting message... "));
   m = millis();
   ret = crypto_box_open((u8*)decryptedmessage, ciphertext, padded_mlen, nonce, pk, sk2);
+  Serial.println(millis() - m);
+
+
+  Serial.println(F("\ncrypto_box_open returned:"));
+  Serial.println(ret);
+
+  free(ciphertext);
+  Serial.println(F("\nDecrypted text: \n"));
+  hexdump((char*)decryptedmessage, padded_mlen);
+
+  Serial.write(decryptedmessage + crypto_box_ZEROBYTES, strlen(message));
+  free(decryptedmessage);
+
+#ifdef ESP8266
+  // Call the yield() function to avoid a wdt reset
+  yield();
+#endif
+
+  // Generate k
+  Serial.print(F("\nGenerating beforenm... "));
+  m = millis();
+  crypto_box_beforenm(k, pk, sk);
+  Serial.println(millis() - m);
+
+
+  // Create temporary message with padding
+  padded_mlen = strlen(message) + crypto_box_ZEROBYTES;
+  padded_message = (char*) malloc(padded_mlen);
+  memset(padded_message, 0x00, crypto_box_ZEROBYTES);
+  memcpy(padded_message + crypto_box_ZEROBYTES, message, strlen(message));
+
+  Serial.println(F("\nUnencrypted Message:"));
+  hexdump((char*)padded_message, padded_mlen);
+
+  ciphertext = (u8*) malloc(padded_mlen);
+
+
+#ifdef ESP8266
+  // Call the yield() function to avoid a wdt reset
+  yield();
+#endif
+
+  // Encrypt message
+  Serial.print(F("\nEncrypting message... "));
+  m = millis();
+  ret = crypto_box_afternm(ciphertext, (u8*)padded_message, padded_mlen, nonce, k);
+  Serial.println(millis() - m);
+
+  Serial.println(F("\ncrypto_box returned:"));
+  Serial.println(ret);
+
+  free(padded_message);
+
+  Serial.println(F("\nCipher text: \n"));
+  hexdump((char*)ciphertext, padded_mlen);
+
+
+#ifdef ESP8266
+  // Call the yield() function to avoid a wdt reset
+  yield();
+#endif
+
+  // We have a string so add 1 byte and NULL it so we can print it
+  decryptedmessage = (char*) malloc(padded_mlen + 1);
+  decryptedmessage[padded_mlen] = '\0';
+
+  // Decrypt message
+  Serial.print(F("\nDecrypting message... "));
+  m = millis();
+  ret = crypto_box_open_afternm((u8*)decryptedmessage, ciphertext, padded_mlen, nonce, k);
   Serial.println(millis() - m);
 
 
