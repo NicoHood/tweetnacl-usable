@@ -7,6 +7,7 @@
 void randombytes(unsigned char * ptr,unsigned long long length) 
 {
 #ifdef ARDUINO
+#warning "This random function is not secure. Please only use it for testing!"
   while (length--) {
     *ptr = rand();
     ptr++;
