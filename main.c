@@ -2,8 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 #include "tweetnacl.h"
 #include "randombytes.h"
+
 
 typedef unsigned char u8;
 
@@ -14,6 +16,22 @@ void hexdump(char * data, int len)
 		printf("%02X", (u8)data[i]);
 	}
 	printf("\n");
+}
+
+static struct timeval tm1;
+
+static inline void start()
+{
+    gettimeofday(&tm1, NULL);
+}
+
+static inline void stop()
+{
+    struct timeval tm2;
+    gettimeofday(&tm2, NULL);
+
+    unsigned long long t = 1000 * (tm2.tv_sec - tm1.tv_sec) + (tm2.tv_usec - tm1.tv_usec) / 1000;
+    printf("%llu ms\n", t);
 }
 
 int main() {
@@ -34,8 +52,10 @@ int main() {
 	hexdump((char*)nonce, crypto_box_NONCEBYTES);
 
 	// Generate public and secret keys
+    start();
 	crypto_box_keypair(pk, sk);
 	crypto_box_keypair(pk2, sk2);
+    stop();
 	
 	printf("\nPublic key: \n");
 	hexdump((char*)pk, crypto_box_PUBLICKEYBYTES);
@@ -58,8 +78,10 @@ int main() {
 	ciphertext = (u8*) malloc(padded_mlen);
 
 	// Encrypt message
+	start();
 	printf("crypto_box returned: %d\n",crypto_box(ciphertext, (u8*)padded_message, padded_mlen, nonce, pk2, sk));
-
+	stop();
+	
 	free(padded_message);
 	
 	printf("\nCipher text: \n");
@@ -70,7 +92,9 @@ int main() {
 	decryptedmessage[padded_mlen] = '\0';
 
 	// Decrypt message
+	start();
 	printf("crypto_box_open returned: %d\n", crypto_box_open((u8*)decryptedmessage, ciphertext, padded_mlen, nonce, pk, sk2));
+	stop();
 	
 	free(ciphertext);
 	printf("\nDecrypted text: \n");
